@@ -1,0 +1,43 @@
+
+数据结构描述
+一颗n叉树
+　　1.每个节点的类型使用DATA_TYPE宏来表示
+　　2.每个节点有一个子女结点指针链表,链表采用最简单的单向链表即可
+　　3.每个结点还有一个父指针，方便规约时建立父节点
+
+
+数据结构定义
+
+1.链表定义
+
+ntList
+{
+   yyNode* yyNode;
+}
+
+struct yyNode  {
+  DATA_TYPE data;
+　yyNode *parent;
+  ntList *children;
+  yyNode *next;
+  yyNode *pre;
+}
+
+2.树结构定义
+nTree
+yyNode *root
+
+
+基本操作
+1.链表mZinitial(ntList *l)//初始化
+insert(yyNode *n)//插入
+clean(ntList *l)   //清空
+
+
+2.树
+void InitialNode(yyNode *n)    //初始化节点
+void CreatTree(yyNode *root)   //创建一棵树
+void TreeInsert(yyNode *root, yyNode *n) //将节点插入root节点中
+void BFS(yyNode *root)   //广度优先遍历
+
+

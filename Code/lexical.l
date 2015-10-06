@@ -1,13 +1,28 @@
+%{
+#include "syntax.tab.h"
+#include "parser.h"
+#include "string.h"
+    
+int yycolumn = 1;
+#define YY_USER_ACTION \
+   yylloc.first_line = yylloc.last_line = yylineno; \
+   yylloc.first_column = yycolumn; \
+   yylloc.last_column = yycolumn + yyleng - 1;\
+   yycolumn += yyleng;
+%}
+
+
+
+
 %option yylineno
 letter       [a-zA-Z]
 digit        [0-9]
-delim        [ \r\t\n]
+delim        [ \r\t]
 ws           {delim}+
 ten          0|([1-9][0-9]*)
-eight        0[1-7]*
+eight        0[1-7][0-7]*
 sixteen      0[xX]([1-9a-f]*|[1-9A-F]*)
-
-ERR_EIGHT    0([1-7]*[089a-zA-Z]+[1-7]*)*
+ERR_EIGHT    0([1-7]*[089a-zA-Z]+[1-7]*)+
 ERR_SIXTEEN  (0[x]([1-9a-f]*[g-z]+[1-9a-f]*)*)|(0[X]([1-9A-F]*[G-Z]+[1-9A-F]*)*)
 
 INT          {ten}|{eight}|{sixteen}
@@ -39,86 +54,228 @@ RETURN       return
 IF           if
 ELSE         else
 WHILE        while
+
 %%
-"//"              {
-                     char c = input();
-		     while (c != '\n')
-		     {
-		            c = input ();
-		     }
-		  }
-"/\*"             {
-                     char c = input();
-		     while(1)
-		     {
-			   if(c == '*')
-			   {
-		              c = input();
-			      if(c == '/')
-			         break;
-			   }
-			   else
-			   c = input();
-	             }
-		  }
-{ws}              {  printf("WS\n");/*nothing */     return 1; }
-{ERR_SIXTEEN}     {  printf("Error type A at Line:%d invalid digit \"%s\" in hexadecimal constant\n", yylineno, yytext);      
-                     return 1; }
-{ERR_EIGHT}       {  printf("Error type A at Line:%d invalid digit \"%s\" in octal constant\n", yylineno, yytext);       
-                     return 1; }
-{INT}             {  printf("INT\n");
-		     return 1; }
-{FLOAT}           {  printf("FLOAT\n");
-	             return 1; }
-{SEMI}            {  printf("SEMI\n");
-	             return 1; }
-{COMMA}           {  printf("COMMA\n");
-	             return 1; }
-{ASSIGNOP}        {  printf("ASSIGNOP\n");
-	             return 1; }
-{MINUS}           {  printf("MINUS\n");
-	             return 1; }
-{PLUS}            {  printf("PLUS\n"); 
-	             return 1;  }
-{STAR}            {  printf("STAR\n");
-	             return 1; }
-{DIV}             {  printf("DIV\n");
-	             return 1; }
-{AND}             {  printf("AND\n");
-	             return 1; }
-{OR}              {  printf("OR\n");
-	             return 1; }
-{NOT}             {  printf("NOT\n");
-	             return 1; }
-{DOT}             {  printf("DOT\n");
-	             return 1; }
-{LP}              {  printf("LP\n");
-	             return 1; }
-{RP}              {  printf("RP\n");
-	             return 1; }
-{LB}              {  printf("LB\n");
-	             return 1; }
-{RB}              {  printf("RB\n");
-	             return 1; }
-{LC}              {  printf("LC\n");
-	             return 1; }
-{RC}              {  printf("RC\n");
-	             return 1; }
-{STRUCT}          {  printf("STRUCT\n");
-	             return 1; }
-{IF}              {  printf("IF\n");
-	             return 1; }
-{RETURN}          {  printf("RETURN\n");
-	             return 1; }
-{ELSE}            {  printf("ELSE\n");
-	             return 1; }
-{WHILE}           {  printf("WHILE\n");
-	             return 1; }
-{RELOP}           {  printf("RELOP\n");
-	             return 1; }
-{TYPE}            {  printf("TYPE\n");
-	             return 1; }
-EOF               {  return 0;}
-{ID}              {  printf("ID\n");
-	             return 1; }
-.                 {  printf("Error type A at Line:%d Myserious characters \"%s\"\n", yylineno, yytext);      return 1;} 
+"\n"        { yycolumn = 1; }
+"//"      { char c = input();
+ 		    while (c != '\n')
+ 		    c = input ();
+          }
+ 
+"/\*"     { char c = input();
+ 		    while(1)
+ 		    { if(c == '*')
+ 			    {
+                    c = input();
+ 			        if(c == '/')
+ 			        break;
+                }
+ 			    else
+ 			        c = input();
+            }
+ 		  }
+ 
+{ws}     { /*noting*/ }
+ 
+{ERR_SIXTEEN}   {   printf("Error type A at Line:%d invalid digit \"%s\" in hexadecimal constant\n", yylineno, yytext); }
+ 
+{ERR_EIGHT}     {   printf("Error type A at Line:%d invalid digit \"%s\" in octal constant\n", yylineno, yytext); }
+ 
+{INT}           {   Data data;
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.i = atoi(yytext);
+                    yylval.np = NewNode("INT", &data, true);
+     		        return INT;
+                }
+ 
+{FLOAT}         {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.f = atof(yytext);
+                    yylval.np = NewNode("FLOAT", &data, true);
+     		        return FLOAT;
+                }
+{SEMI}          {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("SEMI", &data, true);
+     		        return SEMI;
+ }
+          
+{COMMA}         {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("COMMA", &data, true);
+                    return COMMA;
+                }
+ 
+{ASSIGNOP}      {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("ASSIGNOP", &data, true);
+ 	                return ASSIGNOP;
+                }
+ 
+{MINUS}         {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("MINUS", &data, true);
+ 	                return MINUS;
+                }
+ 
+{PLUS}          {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("PLUS", &data, true);
+ 	                return PLUS;
+                 }
+ 
+{STAR}          {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("STAR", &data, true);
+ 	                return STAR;
+                 }
+ 
+{DIV}           {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("DIV", &data, true);
+ 	                return DIV;
+                 }
+ 
+{AND}           {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("AND", &data, true);
+ 	                return AND;
+                 }
+ 
+{OR}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("OR", &data, true);
+ 	                return OR;
+                 }
+ 
+{NOT}           {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("NOT", &data, true);
+ 	                return NOT;
+                 }
+ 
+{DOT}           {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("DOT", &data, true);
+ 	                return DOT;
+                 }
+ 
+{LP}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("LP", &data, true);
+ 	                return LP;
+                 }
+ 
+{RP}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("RP", &data, true);
+ 	                return RP;
+                 }
+ 
+{LB}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("LB", &data, true);
+ 	                return LB;
+                 }
+ 
+{RB}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("RB", &data, true);
+ 	                return RB;
+                 }
+ 
+{LC}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("LC", &data, true);
+ 	                return LC;
+                 }
+ 
+{RC}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("RC", &data, true);
+ 	                return RC;
+                 }
+ 
+{STRUCT}        {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("STRUCT", &data, true);
+ 	                return STRUCT;
+                 }
+ 
+{IF}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("IF", &data, true);
+ 	                return IF;
+                 }
+ 
+{RETURN}        {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("RETURN", &data, true);
+ 	                return RETURN;
+                 }
+ 
+{ELSE}          {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("ELSE", &data, true);
+                    return ELSE;
+                 }
+ 
+{WHILE}         {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("WHILE", &data, true);
+                    return WHILE;
+                 }
+ 
+{RELOP}         {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("RELOP", &data, true);
+                    return RELOP;
+                 }
+ 
+{TYPE}          {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("TYPE", &data, true);
+                    return TYPE;
+                 }
+ 
+EOF             {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("EOF", &data, true);
+                    return true;
+                 }
+ 
+{ID}            {   Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("ID", &data, true);
+                    return ID;
+                 }
+ 
+.               {   printf("Error type A at Line:%d Myserious characters \"%s   \"\n", yylineno, yytext);
+                 }
+%%

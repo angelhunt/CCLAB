@@ -1,10 +1,23 @@
 #include <stdio.h>
+#include "syntax.tab.h"
+#include "nTree.h"
 extern FILE* yyin;
+extern int yydebug;
+extern void yyrestart (FILE *input_file  );
 
+int main(int argc, char ** argv)
+{
+    if (argc <= 1) return 1;
+    FILE* f = fopen(argv[1], "r");
+    if(!f)
+    {
+        perror(argv[1]);
+        return 1;
+    }
+    yyrestart(f);
+   // yydebug = 1;
 
+    yyparse();
 
-int main(int argc, char ** argv) {
-  yyin = fopen(argv[1], "r");
-  while(yylex());
-  return 0;
+    return 0;
 }
