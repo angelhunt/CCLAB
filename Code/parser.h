@@ -10,10 +10,14 @@
 #endif
 #ifndef _PARSER_H
 #define _PARSER_H
+#include "syntax.tab.h"
 
-
+extern bool isErrorOut;
+extern bool errorhandle;
+extern void error_handle(char *msg, Node *error, int lineno);
 struct DATATYPE {
     Node *np;
 };
+
 
 #endif

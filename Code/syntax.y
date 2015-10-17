@@ -3,6 +3,9 @@
 #include "lex.yy.c"
 #include <stdio.h>
 #include "parser.h"
+bool error_exist = false;
+bool isErrorOut = false;
+bool errorhandle = false;
 %}
 
 %define api.value.type {struct DATATYPE}
@@ -17,7 +20,7 @@
 %token <np> TYPE STRUCT 
 %token <np> LP RP LB RB LC RC
 %token <np> RETURN IF ELSE WHILE
-
+%token <np> UNKNOWN 
 
 %type <np> Program  ExtDefList ExtDef ExtDecList    
 %type <np> Specifier StructSpecifier OptTag Tag
@@ -25,6 +28,7 @@
 %type <np> CompSt StmtList Stmt
 %type <np> DefList Def DecList Dec
 %type <np> Exp Args 
+%type <np> error
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -45,6 +49,7 @@ Program : ExtDefList {
         data.i = @1.first_line;
         $$ = NewNode("Program", &data, false); 
         TreeInsert($$, 1, $1);
+        if(error_exist == false)
         DFS($$, 0);
         }
     ;
@@ -61,8 +66,9 @@ ExtDefList : {
         data.i = @1.first_line;
         $$ = NewNode("ExtDefList", &data, false);
         TreeInsert($$, 2, $1, $2);
-        }  
+        }
     ;
+
 
 ExtDef : Specifier ExtDecList SEMI {
         Data data;
@@ -71,6 +77,10 @@ ExtDef : Specifier ExtDecList SEMI {
         $$ = NewNode("ExtDef", &data, false);
         TreeInsert($$, 3, $1, $2, $3);
        }
+    | Specifier ExtDecList error {
+        char *msg = "Missing \";\"";
+        error_handle(msg, $3, @2.first_line);
+        }
     | Specifier SEMI {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
@@ -78,6 +88,10 @@ ExtDef : Specifier ExtDecList SEMI {
         $$ = NewNode("ExtDef", &data, false); 
         TreeInsert($$, 2, $1, $2);
         }
+    | Specifier error {
+        char *msg = "Missing \";\"";
+        error_handle(msg, $2, @1.first_line);
+    } 
     | Specifier FunDec CompSt {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
@@ -100,7 +114,7 @@ ExtDecList : VarDec {
         data.i = @1.first_line;
         $$ = NewNode("ExtDecList", &data, false);
         TreeInsert($$, 3, $1, $1, $3);
-        } 
+        }
     ;
 
 
@@ -130,6 +144,10 @@ StructSpecifier : STRUCT OptTag LC DefList RC {
         $$ = NewNode("StructSpecifier", &data, false); 
         TreeInsert($$, 5, $1, $2, $3, $4, $5);
         }
+    | STRUCT OptTag LC DefList error {
+        char *msg = "Missing \"}\"";
+        error_handle(msg, $5, @4.first_line);
+    } 
     | STRUCT Tag {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
@@ -181,6 +199,11 @@ VarDec : ID {
         $$ = NewNode("VarDec", &data, false);
         TreeInsert($$, 4, $1, $2, $3, $4);
         }
+    | VarDec LB INT error {
+        yyerrok;
+        char *msg = "Missing \"]\"";
+        error_handle(msg, $4, @3.first_line);    
+    }
     ;
 
 FunDec : ID LP VarList RP {
@@ -190,12 +213,20 @@ FunDec : ID LP VarList RP {
         $$ = NewNode("FunDec", &data, false);
         TreeInsert($$, 4, $1, $2, $3, $4);
        }
+    | ID LP VarList error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $2, @3.first_line);    
+    }
     | ID LP RP {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
         data.i = @1.first_line;
         $$ = NewNode("FunDec", &data, false);
         TreeInsert($$, 3, $1, $2, $3);
+    }
+    | ID LP error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $3, @2.first_line);    
     }
     ;
 
@@ -231,11 +262,15 @@ ParamDec : Specifier VarDec {
 CompSt : LC DefList StmtList RC {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
-        data.i = @1.first_line;
+        data.i = @3.first_line;
         $$ = NewNode("CompSt", &data, false);
         TreeInsert($$, 4, $1, $2, $3, $4);
-
        }
+    |   LC DefList StmtList error {
+        char *msg = "Missing \"}\"";
+        error_handle(msg, $4, @3.first_line);
+    }
+    |   error RC
     ;
 
 StmtList : {
@@ -252,6 +287,7 @@ StmtList : {
         TreeInsert($$, 2, $1, $2);
     }
     ;
+
 
 Stmt : Exp SEMI {
         Data data;
@@ -295,6 +331,24 @@ Stmt : Exp SEMI {
         $$ = NewNode("Stmt", &data, false);
         TreeInsert($$, 5, $1, $2, $3, $4, $5);
     }
+    | Exp error {
+        yyclearin;
+        char *msg = "Missing \";\"";
+        error_handle(msg, $2, @1.first_line);    
+    }
+    | RETURN Exp error{
+        char *msg = "Missing \";\"";
+        error_handle(msg, $3, @2.first_line);
+    }
+    | IF LP Exp error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $4, @3.first_line);    
+    }
+    | WHILE LP Exp error{
+        char *msg = "Missing \")\"";
+        error_handle(msg, $4, @3.first_line);    
+    }
+    | error SEMI
     ;
 
 
@@ -322,6 +376,10 @@ Def : Specifier DecList SEMI {
         data.i = @1.first_line;
         $$ = NewNode("Def", &data, false);
         TreeInsert($$, 3, $1, $2, $3);
+    }
+    | Specifier DecList error SEMI{
+        char *msg = "Missing \";\"";
+        error_handle(msg, $3, @2.first_line);
     }
     ;
 
@@ -405,7 +463,7 @@ Exp : Exp ASSIGNOP Exp {
         TreeInsert($$, 3, $1, $2, $3);
     }
     | Exp DIV Exp {
-        Data data;
+       Data data;
         memset((void *)&data, 0, sizeof(Data));
         data.i = @1.first_line;
         $$ = NewNode("Exp", &data, false);
@@ -447,12 +505,17 @@ Exp : Exp ASSIGNOP Exp {
         TreeInsert($$, 3, $1, $2, $3);
     } 
     | Exp LB Exp RB {
+        isErrorOut = false;
         Data data;
         memset((void *)&data, 0, sizeof(Data));
         data.i = @1.first_line;
         $$ = NewNode("Exp", &data, false);
         TreeInsert($$, 4, $1, $2, $3, $4);
     } 
+    | Exp LB Exp error {
+        char *msg = "Missing \"]\"";
+        error_handle(msg, $4, @3.first_line);    
+    }
     | Exp DOT ID {
         Data data;
         memset((void *)&data, 0, sizeof(Data));
@@ -480,6 +543,18 @@ Exp : Exp ASSIGNOP Exp {
         data.i = @1.first_line;
         $$ = NewNode("Exp", &data, false);
         TreeInsert($$, 1, $1);
+    }
+    | LP Exp error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $3, @2.first_line);    
+    }
+    | ID LP Args error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $4, @3.first_line);    
+    }
+    | ID LP error {
+        char *msg = "Missing \")\"";
+        error_handle(msg, $3, @2.first_line);    
     }
     ;
 

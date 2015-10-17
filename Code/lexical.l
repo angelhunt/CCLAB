@@ -22,11 +22,11 @@ ws           {delim}+
 ten          0|([1-9][0-9]*)
 eight        0[1-7][0-7]*
 sixteen      0[xX]([1-9a-f]*|[1-9A-F]*)
-ERR_EIGHT    0([1-7]*[089a-zA-Z]+[1-7]*)+
-ERR_SIXTEEN  (0[x]([1-9a-f]*[g-z]+[1-9a-f]*)*)|(0[X]([1-9A-F]*[G-Z]+[1-9A-F]*)*)
+
+
 
 INT          {ten}|{eight}|{sixteen}
-FLOAT        [0-9]+(\.[0-9]+)?([Ee][+-]?[0-9]+)?
+FLOAT        [1-9][0-9]*(\.[0-9]+)?([Ee][+-]?[0-9]+)?
 ID           ({letter}|_)+({digit}|{letter}|_)*
 
 
@@ -77,9 +77,7 @@ WHILE        while
  
 {ws}     { /*noting*/ }
  
-{ERR_SIXTEEN}   {   printf("Error type A at Line:%d invalid digit \"%s\" in hexadecimal constant\n", yylineno, yytext); }
  
-{ERR_EIGHT}     {   printf("Error type A at Line:%d invalid digit \"%s\" in octal constant\n", yylineno, yytext); }
  
 {INT}           {   Data data;
                     memset((void *)&data, 0, sizeof(Data));
@@ -94,6 +92,7 @@ WHILE        while
                     yylval.np = NewNode("FLOAT", &data, true);
      		        return FLOAT;
                 }
+
 {SEMI}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
@@ -276,6 +275,11 @@ EOF             {   Data data;
                     return ID;
                  }
  
-.               {   printf("Error type A at Line:%d Myserious characters \"%s   \"\n", yylineno, yytext);
+.               {  
+                    Data data;  
+                    memset((void *)&data, 0, sizeof(Data));
+                    data.s = yytext;
+                    yylval.np = NewNode("UNKNOWN", &data, true);
+                    return UNKNOWN;
                  }
 %%
