@@ -1,0 +1,46 @@
+/*************************************************************************
+	> File Name: test.c
+	> Author: 
+	> Mail: 
+	> Created Time: 2015年10月17日 星期六 16时38分14秒
+ ************************************************************************/
+
+#include<stdio.h>
+#include "SymbolTable.h"
+
+SymbolTable symbolTable;
+StackTop stackTop = NULL;
+int depth = 0;
+enum {INT = 100, FLOAT};
+/*int main()
+{
+    SymboltableInit(symbolTable);
+
+    Symbol s1 = NewSymbol("s1", NULL, depth);
+    Symbol s2 = NewSymbol("s2", NULL, depth);
+    Symbol s3 = NewSymbol("s3", NULL, depth);
+    Symbol s4 = NewSymbol("s4", NULL, depth);
+    Symbol s5 = NewSymbol("s1", NULL, depth);
+    Symbol s6 = NewSymbol("s2", NULL, depth);
+    
+    Scope p1 = NewScope(depth);
+    StackInsertScope(&stackTop, p1);
+    StackInsertSymbol(symbolTable, stackTop, s1);
+    StackInsertSymbol(symbolTable, stackTop, s2);
+    StackInsertSymbol(symbolTable, stackTop, s3);
+    StackInsertSymbol(symbolTable, stackTop, s4);
+    StackInsertSymbol(symbolTable, stackTop, s5);
+    StackInsertSymbol(symbolTable, stackTop, s6);
+    printf("symbol:\n");
+    SymbolTablePrint(symbolTable);
+    printf("scope:\n");
+    TopScopePrint(stackTop);
+    TypeValue tv1 = NewTypeValue();
+    tv1->basic = (int)INT;
+    Type i = NewType(BASIC, tv1);
+    printf("i: %d %d\n", i->tn, i->tv->basic);
+
+    TypeValue tv2 = NewTypeValue();
+    tv2->array = NewArrayType(i, 10);
+    Type a = NewType(ARRAY, tv2);
+}*/

@@ -1,0 +1,38 @@
+
+基本操作
+查表，填表
+
+数据结构
+
+符号表采用哈希表和通用链表实现
+以及一个栈来实现
+
+符号数据结构
+typedef strcut Symbol
+{
+    char* name;
+                //名字类型
+    TYPE type;
+                //维数
+                //参数
+                //个数
+                //数值
+                //目标地址
+    ListHead *hashlist;
+    ListHead *scope;
+}Symbol;
+
+
+散列表组织
+typedef Symbol *hashtable[HASH_TABLE_SIZE];
+hash函数
+unsigned hash_pjw(char *name)
+{
+    unsigned val = 0,i;
+    for(; *name; ++name)
+    {
+        val = (val << 2) + *name;
+        if (i = val & ~0x3fff) val = (val ^ (i >> 12)) & 0x3fff;
+    }
+    return val;
+}

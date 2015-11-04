@@ -82,196 +82,225 @@ WHILE        while
 {INT}           {   Data data;
                     memset((void *)&data, 0, sizeof(Data));
                     data.i = atoi(yytext);
-                    yylval.np = NewNode("INT", &data, true);
+                    data.s = yytext;
+                    yylval.np = NewNode(INT, -1 , &data);
      		        return INT;
                 }
  
 {FLOAT}         {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.f = atof(yytext);
-                    yylval.np = NewNode("FLOAT", &data, true);
+                    data.lineno = yylineno;
+                    data.s = yytext;
+                    yylval.np = NewNode(FLOAT, -1 , &data);
      		        return FLOAT;
                 }
 
 {SEMI}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("SEMI", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(SEMI, -1 , &data);
      		        return SEMI;
  }
           
 {COMMA}         {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("COMMA", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(COMMA, -1 , &data);
                     return COMMA;
                 }
  
 {ASSIGNOP}      {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("ASSIGNOP", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(ASSIGNOP, -1 , &data);
  	                return ASSIGNOP;
                 }
  
 {MINUS}         {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("MINUS", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(MINUS, -1 , &data);
  	                return MINUS;
                 }
  
 {PLUS}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("PLUS", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(PLUS, -1 , &data);
  	                return PLUS;
                  }
  
 {STAR}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("STAR", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(STAR, -1 , &data);
  	                return STAR;
                  }
  
 {DIV}           {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("DIV", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(DIV, -1 , &data);
  	                return DIV;
                  }
  
 {AND}           {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("AND", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(AND, -1 , &data);
  	                return AND;
                  }
  
 {OR}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("OR", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(OR, -1 , &data);
  	                return OR;
                  }
  
 {NOT}           {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("NOT", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(NOT, -1 , &data);
  	                return NOT;
                  }
  
 {DOT}           {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("DOT", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(DOT, -1 , &data);
  	                return DOT;
                  }
  
 {LP}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("LP", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(LP, -1 , &data);
  	                return LP;
                  }
  
 {RP}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("RP", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(RP, -1 , &data);
  	                return RP;
                  }
  
 {LB}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("LB", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(LB, -1 , &data);
  	                return LB;
                  }
  
 {RB}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("RB", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(RB, -1 , &data);
  	                return RB;
                  }
  
 {LC}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("LC", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(LC, -1 , &data);
  	                return LC;
                  }
  
 {RC}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("RC", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(RC, -1 , &data);
  	                return RC;
                  }
  
 {STRUCT}        {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("STRUCT", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(STRUCT, -1 , &data);
  	                return STRUCT;
                  }
  
 {IF}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("IF", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(IF, -1 , &data);
  	                return IF;
                  }
  
 {RETURN}        {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("RETURN", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(RETURN, -1 , &data);
  	                return RETURN;
                  }
  
 {ELSE}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("ELSE", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(ELSE, -1 , &data);
                     return ELSE;
                  }
  
 {WHILE}         {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("WHILE", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(WHILE, -1 , &data);
                     return WHILE;
                  }
  
 {RELOP}         {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("RELOP", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(RELOP, -1 , &data);
                     return RELOP;
                  }
  
 {TYPE}          {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("TYPE", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(TYPE, -1 , &data);
                     return TYPE;
                  }
  
 EOF             {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("EOF", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(EOF, -1 , &data);
                     return true;
                  }
  
 {ID}            {   Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("ID", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(ID, -1 , &data);
                     return ID;
                  }
  
@@ -279,7 +308,8 @@ EOF             {   Data data;
                     Data data;  
                     memset((void *)&data, 0, sizeof(Data));
                     data.s = yytext;
-                    yylval.np = NewNode("UNKNOWN", &data, true);
+                    data.lineno = yylineno;
+                    yylval.np = NewNode(UNKNOWN, -1 , &data);
                     return UNKNOWN;
                  }
 %%

@@ -18,13 +18,13 @@ LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
 parser: syntax $(filter-out $(LFO),$(OBJS))
-	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly -g
+	$(CC) -g -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly 
 
 syntax: lexical syntax-c
-	$(CC) -c $(YFC) -o $(YFO)
+	$(CC) -g -c $(YFC) -o $(YFO)
 
 lexical: $(LFILE)
-	$(FLEX) -o $(LFC) $(LFILE)
+	$(FLEX)  -o $(LFC) $(LFILE)
 
 syntax-c: $(YFILE)
 	$(BISON) -o $(YFC) -d -v -t $(YFILE)
@@ -32,11 +32,30 @@ syntax-c: $(YFILE)
 -include $(patsubst %.o, %.d, $(OBJS))
 
 # 定义的一些伪目标
-.PHONY: clean test
-test:
-	./parser ../Test/test1.cmm
+.PHONY: clean SDDtest debug
+SDDtest:
+	./parser ../Test/SDDtest/test1.cmm
+	./parser ../Test/SDDtest/test2.cmm
+	./parser ../Test/SDDtest/test3.cmm
+	./parser ../Test/SDDtest/test4.cmm
+	./parser ../Test/SDDtest/test5.cmm
+	./parser ../Test/SDDtest/test6.cmm
+	./parser ../Test/SDDtest/test7.cmm
+	./parser ../Test/SDDtest/test8.cmm
+	./parser ../Test/SDDtest/test9.cmm
+	./parser ../Test/SDDtest/test10.cmm
+	./parser ../Test/SDDtest/test11.cmm
+	./parser ../Test/SDDtest/test12.cmm
+	./parser ../Test/SDDtest/test13.cmm
+	./parser ../Test/SDDtest/test14.cmm
+	./parser ../Test/SDDtest/test15.cmm
+	./parser ../Test/SDDtest/test16.cmm
+	./parser ../Test/SDDtest/test17.cmm
 clean:
 	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output
 	rm -f $(OBJS) $(OBJS:.o=.d)
 	rm -f $(LFC) $(YFC) $(YFC:.c=.h)
 	rm -f *~
+debug:
+	gcc -g -o parser main.c syntax.tab.c parser.c nTree.c SDD/SDD.c Symbol/*.c -lfl -ly
+	gdb parser

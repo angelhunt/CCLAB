@@ -1,0 +1,26 @@
+1.对于每个产生式，写一个语义分析函数
+2.在每个语义分析函数中进行相应的属性赋值以及，查表插表操作
+
+
+
+节点中需要增加的属性
+1.seq  //对应非终结符所用产生式的序号
+2.syn  //综合属性
+3.inh  //继承属性
+
+
+
+每个非终结符一个函数
+函数存放在函数表中
+
+
+
+SDD.h提高函数 void SDD(Node *root)
+函数中调用SDDFuncTable[root->nodetype](root->inh)
+
+
+typedef Syn (*SDDFunc)(ihn);
+SDDFunc SDDFuncTable[] = 
+{
+
+}

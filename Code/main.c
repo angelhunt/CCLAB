@@ -4,40 +4,44 @@
 #include "parser.h"
 extern FILE* yyin;
 extern int yydebug;
+extern int yylineno;
 extern void yyrestart (FILE *input_file  );
 extern bool error_exist;
-extern void error_handle(char *msg, Node *error, int lineno);
-extern bool isErrorOut;
-extern bool errorhandle;
 
 int main(int argc, char ** argv)
 {
     if (argc <= 1) return 1;
-    FILE* f = fopen(argv[1], "r");
-    if(!f)
+    int i;
+    FILE* f;
+    for(i = 1; i < argc; i++)
     {
-        perror(argv[1]);
-        return 1;
-    }
-    yyrestart(f);
+        f = fopen(argv[i], "r");
+        if(!f)
+        {
+            perror(argv[i]);
+            return 1;
+        }
+        yylineno = 1;
+        yyrestart(f);
 //    yydebug = 1;
 
-    yyparse();
-
+        yyparse();
+    }
     return 0;
 }
 
 void yyerror(char* msg) {
-    char *errormsg = "Error type B at Line %d: syntax error\n";
+    char *errormsg = errorstr[B];
     if(error_exist == false)
        error_exist = true;
-    if(strcmp(yylval.np->name, "UNKNOWN") == 0)
+    if(yylval.np->nodetype == UNKNOWN)
     {
         errormsg = "Error type A at Line %d: Mysterious character \"%s\"\n";
         printf(errormsg, yylloc.first_line, yylval.np->data.s);
     }
     else
     {
-    printf(errormsg, yylloc.first_line);
+        errormsg = errorstr[et];
+        printf(errormsg, yylloc.first_line);
     }
 }

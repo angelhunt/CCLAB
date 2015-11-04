@@ -2,14 +2,16 @@
 #define __LIST_H__
 
 #include "assert.h"
-
+#include <stdbool.h>
+#include <stdio.h>
 struct ListHead {
 	struct ListHead *prev, *next;
 };
 typedef struct ListHead ListHead;
+typedef ListHead* Position;
 
 #define list_entry(ptr, type, member) \
-	((type*)((char*)(ptr) - (int)(&((type*)0)->member)))
+	((type*)((void*)(ptr) - (void *)(&((type*)0)->member)))
 
 static inline void
 list_add(ListHead *prev, ListHead *next, ListHead *data) {
@@ -44,7 +46,7 @@ list_init(ListHead *list) {
 	list->prev = list->next = list;
 }
 
-static inline boolean
+static inline bool
 list_empty(ListHead *list) {
 	return list == list->next;
 }

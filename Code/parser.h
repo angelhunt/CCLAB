@@ -12,12 +12,22 @@
 #define _PARSER_H
 #include "syntax.tab.h"
 
-extern bool isErrorOut;
-extern bool errorhandle;
-extern void error_handle(char *msg, Node *error, int lineno);
+//extern bool isErrorOut;
+//extern bool errorhandle;
+//extern void error_handle(char *msg, Node *error, int lineno);
 struct DATATYPE {
     Node *np;
 };
+enum errortype
+{
+    B,
+    MISSSEMI,
+    MISSRP,
+    MISSRB,
+    MISSRC
+};
 
+extern enum errortype et;
+extern char errorstr[][40];
 
 #endif
