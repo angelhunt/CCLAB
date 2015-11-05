@@ -30,4 +30,6 @@ extern Scope SS_GetTop(ScopeStack stack);
 extern void ScopePrints(Scope s);
 struct Symbol_;
 extern struct Symbol_* LookUpScope(Scope scope, struct Symbol_* s);
+struct Symbol_;
+extern bool ScopeInsertSymbol(Scope scope, struct Symbol_* s);
 #endif

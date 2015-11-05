@@ -17,13 +17,13 @@ int symbolSize = sizeof(struct Symbol_);
 
 
 //creat new symbol
- Symbol NewSymbol(char *name, Type type, int depth)
+ Symbol NewSymbol(char *name, Type type, int lineno)
 {
     Symbol symbol = malloc(symbolSize);
     memset((void *)symbol, 0, symbolSize);
     symbol->name = name;
     symbol->type = type;
-    symbol->depth = depth;
+    symbol->lineno = lineno;
     return symbol;
 }
 
@@ -68,6 +68,8 @@ char *getFuncStr(FuncType f)
 
 bool TypeIsEqual(Type t1, Type t2)
 {
+    if(t1 == NULL || t2 == NULL)
+        return true;
     Scope scope1;
     Scope scope2;
     ListHead *head1, *head2, *ptr1, *ptr2;

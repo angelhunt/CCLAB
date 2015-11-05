@@ -51,6 +51,12 @@ SDDtest:
 	./parser ../Test/SDDtest/test15.cmm
 	./parser ../Test/SDDtest/test16.cmm
 	./parser ../Test/SDDtest/test17.cmm
+	./parser ../Test/SDDtest/etest1.cmm
+	./parser ../Test/SDDtest/etest2.cmm
+	./parser ../Test/SDDtest/etest3.cmm
+	./parser ../Test/SDDtest/etest4.cmm
+	./parser ../Test/SDDtest/etest5.cmm
+	./parser ../Test/SDDtest/etest6.cmm
 clean:
 	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output
 	rm -f $(OBJS) $(OBJS:.o=.d)

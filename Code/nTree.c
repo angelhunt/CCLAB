@@ -122,9 +122,13 @@ extern void TreeInsert(Node *root, int nodeNum, ...)
     va_list node_list;
     int count = 0;
     va_start(node_list, nodeNum);
-
+    Node *n;
     for(count = 0; count < nodeNum; count++)
-        Insert(root -> children, va_arg(node_list, Node*));
+    {
+        n = va_arg(node_list, Node*);
+        Insert(root -> children, n);
+        n->parent = root;
+    }
 
     va_end(node_list);
 }

@@ -10,7 +10,7 @@
 #include "SymbolTable.h"
 #include "convenience.h"
 #include "../syntax.tab.h"
-
+static int lasttype = COMST;
 
 
 STStack NewSTStack()
@@ -30,7 +30,15 @@ bool ST_Push(STStack stack, SymbolTable SymbolTable)
     if(stack->stacktop == stack->stacksize - 1)
         return false;
     stack->stacktop++;
-    stack->sts[stack->stacktop] = SymbolTable;
+    //stack->sts[stack->stacktop] = SymbolTable;
+    if(stack->stacktop == 0)
+        stack->sts[stack->stacktop] = SymbolTable;
+    else
+    {
+    SS_Push(stack->sts[0]->ss, NewScope());
+    stack->sts[stack->stacktop] = stack->sts[0];
+    stack->sts[stack->stacktop]->type = SymbolTable->type;
+    }
     return true;
 }
 
@@ -41,6 +49,8 @@ SymbolTable ST_Pop(STStack stack)
         return NULL;
     SymbolTable t = stack->sts[stack->stacktop];
     stack->stacktop--;
+    stack->sts[stack->stacktop]->type = COMST;
+    SS_Pop(stack->sts[0]->ss);
     return t;
 }
 
@@ -57,13 +67,20 @@ SymbolTable ST_GetTop(STStack stack)
  //look up the table
  Symbol LookUpSymbol(STStack stack, Symbol s)
  {
-    unsigned hashnum = HashPjw(s->name);
     SymbolTable table = ST_GetTop(stack);
+    Symbol csymbol = NULL;
+    if(table->type == PARAMST)
+    {
+            csymbol = LookUpScope(SS_GetTop(table->ss), s);
+            if(csymbol != NULL) 
+            return csymbol;
+    }
+    unsigned hashnum = HashPjw(s->name);
     ListHead *ptr,*head;
     head = &table->slist[hashnum]->hashlist;
     for(ptr = head->next; ptr != head; ptr = ptr->next)
     {
-        Symbol csymbol = SHLEntry(ptr);
+        csymbol = SHLEntry(ptr);
         if(strcmp(s->name, csymbol->name) == 0)
             return csymbol;
     }
@@ -71,7 +88,7 @@ SymbolTable ST_GetTop(STStack stack)
     head = &table->slist[hashnum]->hashlist;
     for(ptr = head->next; ptr != head; ptr = ptr->next)
     {
-        Symbol csymbol = SHLEntry(ptr);
+        csymbol = SHLEntry(ptr);
         if(strcmp(s->name, csymbol->name) == 0)
             return csymbol;
     }

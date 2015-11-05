@@ -40,7 +40,7 @@ char SDDErrorStr[][70] =
     "Redefined field \"%s\".",                                        //15
     "Duplicated name \"%s\".",                                        //16
     "Undefined structure \"Position\".",                              //17
-    " ",                                                              //18
+    "Undefined function \"%s\".",                                     //18
     "Inconsistent declaration of function \"%s\"."                    //19
 };
 
@@ -62,7 +62,8 @@ void print_error(int errortype, int lineno, int argc, char *s1, char *s2)
         default:break;
     }
     printf("\n");
-    exit(0);
+    if(errortype != 3 && errortype != 19)
+        exit(0);
 }
 
 STStack sts;
@@ -229,7 +230,7 @@ SDDFUNCDEF(StructSpecifier_Handle)
             Tag_Handle(child, ts);
             ts = NewSyn();
             s = child->children->head->next->data.s;
-            symbol = LookUpSymbol(sts, NewSymbol(s, NULL, -1));
+            symbol = LookUpSymbol(sts, NewSymbol(s, NULL, child->children->head->next->data.lineno));
             if(symbol == NULL)
                 print_error(17, child->data.lineno, 1, s, NULL);
             ts->SType = symbol->type;
@@ -249,7 +250,7 @@ SDDFUNCDEF(OptTag_Handle)
     {
         case 0:
             i->SType->tv->structure->name = child->data.s;
-            s = NewSymbol(child->data.s, i->SType, -1);
+            s = NewSymbol(child->data.s, i->SType, child->data.lineno);
             if(!TableInsertSymbol(ST_GetTop(sts), s))
                 print_error(16, n->data.lineno, 1, child->data.s, NULL);
             return NULL;
@@ -265,7 +266,7 @@ SDDFUNCDEF(Tag_Handle)
     printf("Now is in func Tag\n");
     #endif
 
-   /* Symbol srcsym = NewSymbol(n->data.s, NULL, -1);
+   /* Symbol srcsym = NewSymbol(n->data.s, NULL, child->data.lineno);
     Symbol dstsym = LOOKUPS(srcsym, 0, n->data.lineno);
     Syn ts = NewSyn();
     ts->SType = dstsym->type;
@@ -286,7 +287,23 @@ SDDFUNCDEF(VarDec_Handle)
     switch (n->seq)
     {
         case 0:
-            symbol = NewSymbol(child->data.s, i->SType, -1);
+            symbol = NewSymbol(child->data.s, i->SType, child->data.lineno);
+           /* if(LookUpSymbol(sts, symbol) != NULL)
+            {
+                switch(ST_GetTop(sts)->type)
+                {
+                    case COMST : case PARAMST:
+                        print_error(3, n->data.lineno, 1, child->data.s, NULL);
+                        break;
+                    case STRUCTST:
+                        print_error(15, n->data.lineno, 1, child->data.s, NULL);
+                        break;
+                }
+            }*/
+            if(n->parent->nodetype == ParamDec)
+                ScopeInsertSymbol(SS_GetTop(ST_GetTop(sts)->ss), symbol);
+            else
+            {
             if(!TableInsertSymbol(ST_GetTop(sts), symbol))
             {
                 switch(ST_GetTop(sts)->type)
@@ -298,6 +315,7 @@ SDDFUNCDEF(VarDec_Handle)
                         print_error(15, n->data.lineno, 1, child->data.s, NULL);
                         break;
                 }
+            }
             }
             child->syn->SType = i->SType;
             return NULL;
@@ -330,7 +348,6 @@ SDDFUNCDEF(FunDec_Handle)
     switch (n->seq)
     {
         case 0:
-           // ST_Push(sts, NewSymbolTable(PARAMST));
             ts = NewSyn();
             tv = NewTypeValue();
             tv->func = NewFuncType(i->SType);
@@ -344,8 +361,7 @@ SDDFUNCDEF(FunDec_Handle)
             t = child;
             child = child->next->next;
             VarList_Handle(child, ts);
-            //ST_Pop(sts);
-            symbol = NewSymbol(t->data.s, ts->SType, -1);
+            symbol = NewSymbol(t->data.s, ts->SType, child->data.lineno);
             temp = LookUpSymbol(sts, symbol);
             if(temp != NULL)
             {
@@ -358,7 +374,10 @@ SDDFUNCDEF(FunDec_Handle)
                         if(symbol->type->tn == FUNC)
                             print_error(4, t->data.lineno, 1, t->data.s, NULL);
                         else
+                        {
                             print_error(19, t->data.lineno, 1, t->data.s, NULL);
+                            print_error(18, temp->lineno, 1, temp->name, NULL);
+                        }
                     }
                     else
                     {
@@ -381,13 +400,15 @@ SDDFUNCDEF(FunDec_Handle)
         case 1:
             ts = NewSyn();
             tv = NewTypeValue();
-            tv->func = NewFuncType(i->SType);  
+            tv->func = NewFuncType(i->SType);
+            tv->func->st = ST_GetTop(sts);
+            tv->func->scope = SS_GetTop(tv->func->st->ss);
             tv->func->name = child->data.s;
             if(n->next->nodetype == SEMI)
                 ts->SType = NewType(FUNCAFF, tv);
             else 
                 ts->SType = NewType(FUNC, tv);
-            symbol = NewSymbol(child->data.s, ts->SType, -1);
+            symbol = NewSymbol(child->data.s, ts->SType, child->data.lineno);
             temp = LookUpSymbol(sts, symbol);
             if(temp != NULL)
             {
@@ -395,12 +416,30 @@ SDDFUNCDEF(FunDec_Handle)
                     print_error(4, child->data.lineno, 1, child->data.s, NULL);
                 else
                 {
-                    if(TypeIsEqual(symbol->type, temp->type))
-                        print_error(19, child->data.lineno, 1, child->data.s, NULL);
+                    if(!TypeIsEqual(symbol->type, temp->type))
+                    {
+                        if(symbol->type->tn == FUNC)
+                            print_error(4, child->data.lineno, 1, child->data.s, NULL);
+                        else
+                            print_error(19, child->data.lineno, 1, child->data.s, NULL);
+                    }
+                    else
+                    {
+                        if(symbol->type->tn == FUNC)
+                        {
+                            free(temp->type);
+                            temp->type = symbol->type;
+                            free(symbol);
+                        }
+                    }
                 }
             }
-            if(!TableInsertSymbol(sts->sts[0], symbol))
-                print_error(4, child->data.lineno, 1, child->data.s, NULL);
+            else
+            {
+                if(!TableInsertSymbol(sts->sts[0], symbol))
+                    print_error(4, child->data.lineno, 1, child->data.s, NULL);
+            }
+            child->syn->SType = ts->SType;
             return ts;
     }
 
@@ -728,11 +767,11 @@ SDDFUNCDEF(Exp_Handle)
             ts1 = Exp_Handle(child, NULL);
             return ts1;
         case 11:
-            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, -1));
+            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
-                print_error(2, child->data.lineno, 1, child->data.s, NULL);
-            if(symbol->type->tn != FUNC)
-                print_error(11, child->data.lineno, 1, child->data.s, NULL);
+                    print_error(2, child->data.lineno, 1, child->data.s, NULL);
+                if(symbol->type->tn != FUNC)
+                    print_error(11, child->data.lineno, 1, child->data.s, NULL);
             child = child->next->next;
             ts1 = NewSyn();
             ts1->SType = symbol->type;
@@ -741,7 +780,7 @@ SDDFUNCDEF(Exp_Handle)
                 print_error(9, child->data.lineno, 2, getFuncStr(ts1->SType->tv->func), getArgsStr(child));
             return ts1;
         case 12:
-            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, -1));
+            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
                 print_error(2, child->data.lineno, 1, child->data.s, NULL);
             if(symbol->type->tn != FUNC)
@@ -776,7 +815,7 @@ SDDFUNCDEF(Exp_Handle)
             if(ts1->SType->tn != STRUCTURE)
                 print_error(13, child->data.lineno, 0, NULL, NULL);
             child = child->next->next;
-            symbol = LookUpScope(ts1->SType->tv->structure->scope, NewSymbol(child->data.s, NULL, -1));
+            symbol = LookUpScope(ts1->SType->tv->structure->scope, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
                 print_error(14, child->data.lineno, 1, child->data.s, NULL);
             ts1 = NewSyn();
@@ -784,11 +823,12 @@ SDDFUNCDEF(Exp_Handle)
             n->syn = ts1;
             return ts1;
         case 15:
-            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, -1));
+            symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
                 print_error(1, child->data.lineno, 1, child->data.s, NULL);
             ts1 = NewSyn();
-            ts1->SType = symbol->type;
+            if(symbol != NULL)
+                ts1->SType = symbol->type;
             n->syn = ts1;
             return ts1;
         case 16:

@@ -65,11 +65,11 @@ bool TableInsertSymbol(SymbolTable table, Symbol s)
             return false;
     }
     list_add_after(&table->slist[hashnum]->hashlist, &s->hashlist);
-    if(table->type == STRUCTST || table->type == PARAMST)
+    /*if(table->type == STRUCTST || table->type == PARAMST)
     {
         Scope scope = SS_GetTop(table->ss);
         list_add_after(&(scope->scopelist), &s->scopelist);
-    }
+    }*/
     return true;
 }
 
@@ -92,3 +92,5 @@ bool TableInsertSymbol(SymbolTable table, Symbol s)
     printf("ScopeStack top:\n");
     ScopePrints(SS_GetTop(table->ss));
 }
+
+

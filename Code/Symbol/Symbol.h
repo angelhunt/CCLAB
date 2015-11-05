@@ -19,7 +19,7 @@ struct Symbol_
                    //amount of paramter
                    //value 
                    //address in memory
-    unsigned depth;     //depth of scope
+    unsigned lineno;     //depth of scope
     ListHead hashlist;               //hashlist
     ListHead scopelist;               //scopelist
 };
@@ -39,7 +39,7 @@ static inline Symbol SSLEntry(ListHead *ptr)
 
 extern int symbolSize;
 
-extern  Symbol NewSymbol(char *name, Type type, int depth);
+extern  Symbol NewSymbol(char *name, Type type, int lineno);
 bool SymbolIsEqual(Symbol s1, Symbol s2);
 extern char *getFuncStr(FuncType f);
 extern bool TypeIsEqual(Type t1, Type t2);

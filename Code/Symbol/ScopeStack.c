@@ -71,3 +71,17 @@ struct Symbol_* LookUpScope(Scope scope, struct Symbol_* s)
     }
     return NULL;
 }
+
+bool ScopeInsertSymbol(Scope scope, struct Symbol_* s)
+{
+    ListHead *ptr,*head;
+    head = &scope->scopelist;
+    for(ptr = head->next; ptr != head; ptr = ptr->next)
+    {
+        Symbol csymbol = SSLEntry(ptr);
+        if(strcmp(s->name, csymbol->name) == 0)
+            return false;
+    }
+    list_add_before(head, &s->scopelist);
+    return true;
+}
