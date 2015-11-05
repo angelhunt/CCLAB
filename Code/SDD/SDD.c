@@ -45,7 +45,7 @@ char SDDErrorStr[][70] =
 };
 
 
-void print_error(int errortype, int lineno, int argc, char *s1, char *s2)
+Syn print_error(int errortype, int lineno, int argc, char *s1, char *s2)
 {
     printf("Error type %d at Line %d: ", errortype, lineno);
     switch(argc)
@@ -62,8 +62,9 @@ void print_error(int errortype, int lineno, int argc, char *s1, char *s2)
         default:break;
     }
     printf("\n");
-    if(errortype != 3 && errortype != 19)
-        exit(0);
+    return NULL;
+    //if(errortype != 3 && errortype != 19)
+    //    exit(0);
 }
 
 STStack sts;
@@ -120,25 +121,31 @@ SDDFUNCDEF(ExtDef_Handle)
     {
         case 0:
             ts = Specifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             child = child->next;
             ExtDecList_Handle(child, ts);
             return NULL;
         case 1:
             ts = Specifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             return NULL;
         case 2:
             ts = Specifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             child = child->next;
             ST_Push(sts, NewSymbolTable(PARAMST));
             ts = FunDec_Handle(child, ts);
+            if(ts == NULL) return NULL;
             child = child->next;
             CompSt_Handle(child, ts);
             ST_Pop(sts);
             return NULL;
         case 3:
             ts = Specifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             child = child->next;
             ts = FunDec_Handle(child, ts);
+            if(ts == NULL) return NULL;
             return NULL;
             
     }
@@ -158,6 +165,7 @@ SDDFUNCDEF(ExtDecList_Handle)
     {
         case 0:
             ts = VarDec_Handle(child, i);
+            if(ts == NULL) return NULL;
             return NULL;
         case 1:
             VarDec_Handle(child, i);
@@ -191,6 +199,7 @@ SDDFUNCDEF(Specifier_Handle)
             return ts;
         case 1:
             ts = StructSpecifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             return ts;
     }
     return NULL;
@@ -232,7 +241,7 @@ SDDFUNCDEF(StructSpecifier_Handle)
             s = child->children->head->next->data.s;
             symbol = LookUpSymbol(sts, NewSymbol(s, NULL, child->children->head->next->data.lineno));
             if(symbol == NULL)
-                print_error(17, child->data.lineno, 1, s, NULL);
+                return print_error(17, child->data.lineno, 1, s, NULL);
             ts->SType = symbol->type;
             return ts;
     }
@@ -252,7 +261,7 @@ SDDFUNCDEF(OptTag_Handle)
             i->SType->tv->structure->name = child->data.s;
             s = NewSymbol(child->data.s, i->SType, child->data.lineno);
             if(!TableInsertSymbol(ST_GetTop(sts), s))
-                print_error(16, n->data.lineno, 1, child->data.s, NULL);
+                return print_error(16, n->data.lineno, 1, child->data.s, NULL);
             return NULL;
         case 1:
             return NULL;
@@ -293,10 +302,10 @@ SDDFUNCDEF(VarDec_Handle)
                 switch(ST_GetTop(sts)->type)
                 {
                     case COMST : case PARAMST:
-                        print_error(3, n->data.lineno, 1, child->data.s, NULL);
+                        return print_error(3, n->data.lineno, 1, child->data.s, NULL);
                         break;
                     case STRUCTST:
-                        print_error(15, n->data.lineno, 1, child->data.s, NULL);
+                        return print_error(15, n->data.lineno, 1, child->data.s, NULL);
                         break;
                 }
             }*/
@@ -309,10 +318,10 @@ SDDFUNCDEF(VarDec_Handle)
                 switch(ST_GetTop(sts)->type)
                 {
                     case COMST : case PARAMST:
-                        print_error(3, n->data.lineno, 1, child->data.s, NULL);
+                        return print_error(3, n->data.lineno, 1, child->data.s, NULL);
                         break;
                     case STRUCTST:
-                        print_error(15, n->data.lineno, 1, child->data.s, NULL);
+                        return print_error(15, n->data.lineno, 1, child->data.s, NULL);
                         break;
                 }
             }
@@ -325,6 +334,7 @@ SDDFUNCDEF(VarDec_Handle)
             tv->array = NewArrayType(i->SType, child->next->next->data.lineno);
             ts->SType = NewType(ARRAY, tv);
             ts = VarDec_Handle(child, ts);
+            if(ts == NULL) return NULL;
             return NULL;
     }
 
@@ -366,17 +376,17 @@ SDDFUNCDEF(FunDec_Handle)
             if(temp != NULL)
             {
                 if(temp->type->tn == FUNC)
-                    print_error(4, t->data.lineno, 1, t->data.s, NULL);
+                    return print_error(4, t->data.lineno, 1, t->data.s, NULL);
                 else
                 {
                     if(!TypeIsEqual(symbol->type, temp->type))
                     {
                         if(symbol->type->tn == FUNC)
-                            print_error(4, t->data.lineno, 1, t->data.s, NULL);
+                            return print_error(4, t->data.lineno, 1, t->data.s, NULL);
                         else
                         {
-                            print_error(19, t->data.lineno, 1, t->data.s, NULL);
-                            print_error(18, temp->lineno, 1, temp->name, NULL);
+                            return print_error(19, t->data.lineno, 1, t->data.s, NULL);
+                            return print_error(18, temp->lineno, 1, temp->name, NULL);
                         }
                     }
                     else
@@ -393,7 +403,7 @@ SDDFUNCDEF(FunDec_Handle)
             else
             {
                 if(!TableInsertSymbol(sts->sts[0], symbol))
-                    print_error(4, t->data.lineno, 1, t->data.s, NULL);
+                    return print_error(4, t->data.lineno, 1, t->data.s, NULL);
             }
             t->syn->SType = ts->SType;
             return ts;
@@ -413,15 +423,15 @@ SDDFUNCDEF(FunDec_Handle)
             if(temp != NULL)
             {
                 if(temp->type->tn == FUNC)
-                    print_error(4, child->data.lineno, 1, child->data.s, NULL);
+                    return print_error(4, child->data.lineno, 1, child->data.s, NULL);
                 else
                 {
                     if(!TypeIsEqual(symbol->type, temp->type))
                     {
                         if(symbol->type->tn == FUNC)
-                            print_error(4, child->data.lineno, 1, child->data.s, NULL);
+                            return print_error(4, child->data.lineno, 1, child->data.s, NULL);
                         else
-                            print_error(19, child->data.lineno, 1, child->data.s, NULL);
+                            return print_error(19, child->data.lineno, 1, child->data.s, NULL);
                     }
                     else
                     {
@@ -437,7 +447,7 @@ SDDFUNCDEF(FunDec_Handle)
             else
             {
                 if(!TableInsertSymbol(sts->sts[0], symbol))
-                    print_error(4, child->data.lineno, 1, child->data.s, NULL);
+                    return print_error(4, child->data.lineno, 1, child->data.s, NULL);
             }
             child->syn->SType = ts->SType;
             return ts;
@@ -488,6 +498,7 @@ SDDFUNCDEF(ParamDec_Handle)
     {
         case 0:
             ts = Specifier_Handle(child, NULL);
+            if(ts == NULL) return NULL;
             child = child->next;
             VarDec_Handle(child, ts);
             break;
@@ -556,30 +567,31 @@ SDDFUNCDEF(Stmt_Handle)
     switch (n->seq)
     {
         case 0:
-            Exp_Handle(child, NULL);
+            Exp_Handle(child, i);
             break;
         case 1:
-            CompSt_Handle(child, NULL);
+            CompSt_Handle(child, i);
             break;
         case 2:
             child = child->next;
             ts = Exp_Handle(child, i);
+            if(ts == NULL) return NULL;
             if(!TypeIsEqual(ts->SType, i->SType->tv->func->returntype))
-                print_error(8, n->data.lineno, 0, NULL, NULL);
+                return print_error(8, n->data.lineno, 0, NULL, NULL);
             return NULL;
         case 3:
             child = child->next->next;
-            Exp_Handle(child, NULL);
+            Exp_Handle(child, i);
             child = child->next->next;
-            Stmt_Handle(child, NULL);
+            Stmt_Handle(child, i);
             break;
         case 4:
             child = child->next->next;
-            Exp_Handle(child, NULL);
+            Exp_Handle(child, i);
             child = child->next->next;
-            Stmt_Handle(child, NULL);
+            Stmt_Handle(child, i);
             child = child->next->next;
-            Stmt_Handle(child, NULL);
+            Stmt_Handle(child, i);
             break;
     }
    
@@ -623,7 +635,8 @@ SDDFUNCDEF(Def_Handle)
     switch (n->seq)
     {
         case 0:
-            ts = Specifier_Handle(child, NULL);
+            ts = Specifier_Handle(child, i);
+            if(ts == NULL) return NULL;
             child = child->next;
             DecList_Handle(child, ts);
             return NULL;
@@ -677,7 +690,7 @@ SDDFUNCDEF(Dec_Handle)
         case 1:
             VarDec_Handle(child, i);
             child = child->next->next;
-            Exp_Handle(child, NULL);
+            Exp_Handle(child, i);
             return NULL;
     }
 
@@ -697,127 +710,148 @@ SDDFUNCDEF(Exp_Handle)
     switch (n->seq)
     {
         case 0:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             if(!(child->seq == 15 || child->seq == 14 || child->seq == 9 || child->seq == 0))
-                print_error(6, child->data.lineno, 0, NULL, NULL);
+                return print_error(6, child->data.lineno, 0, NULL, NULL);
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(5, n->data.lineno, 0, NULL, NULL);
+                return print_error(5, n->data.lineno, 0, NULL, NULL);
             return NULL;
         case 1:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 2:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 3:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 4:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 5:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 6:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 7:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!TypeIsEqual(ts1->SType, ts2->SType))
-                print_error(7, n->data.lineno, 0, NULL, NULL);
+                return print_error(7, n->data.lineno, 0, NULL, NULL);
             return ts1;
         case 8:
             child = child->next;
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             return ts1;
         case 9:
             child = child->next;
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
             return ts1;
         case 10:
             child = child->next;
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             return ts1;
         case 11:
             symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
-                    print_error(2, child->data.lineno, 1, child->data.s, NULL);
+                    return print_error(2, child->data.lineno, 1, child->data.s, NULL);
                 if(symbol->type->tn != FUNC)
-                    print_error(11, child->data.lineno, 1, child->data.s, NULL);
+                    return print_error(11, child->data.lineno, 1, child->data.s, NULL);
             child = child->next->next;
             ts1 = NewSyn();
             ts1->SType = symbol->type;
             ts2 = Args_Handle(child, ts1);
             if(ts2 == NULL)
-                print_error(9, child->data.lineno, 2, getFuncStr(ts1->SType->tv->func), getArgsStr(child));
+                return print_error(9, child->data.lineno, 2, getFuncStr(ts1->SType->tv->func), getArgsStr(child));
             return ts1;
         case 12:
             symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
-                print_error(2, child->data.lineno, 1, child->data.s, NULL);
+                return print_error(2, child->data.lineno, 1, child->data.s, NULL);
             if(symbol->type->tn != FUNC)
-                print_error(11, child->data.lineno, 1, child->data.s, NULL);
+                return print_error(11, child->data.lineno, 1, child->data.s, NULL);
             ts1 = NewSyn();
             ts1->SType = symbol->type;
             return ts1;
         case 13:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             if(ts1->SType->tn != ARRAY)
             {
                 char str[100];
                 str[0] = '\0';
                 Get_Node_Str(child, str, 100);
-                print_error(10, child->data.lineno, 1, str, NULL);
+                return print_error(10, child->data.lineno, 1, str, NULL);
             }
             child = child->next->next;
-            ts2 = Exp_Handle(child, NULL);
+            ts2 = Exp_Handle(child, i);
+            if(ts2 == NULL) return NULL;
             if(!(ts2->SType->tn == BASIC && ts2->SType->tv->basic == INT))
             {
                 char str[100];
                 str[0] = '\0';
                 Get_Node_Str(child, str, 100);
-                print_error(12, child->data.lineno, 1, str, NULL);
+                return print_error(12, child->data.lineno, 1, str, NULL);
             }
             ts2 = NewSyn();
             ts2->SType = ts1->SType->tv->array->elem;
             n->syn = ts2;
             return ts2;
         case 14:
-            ts1 = Exp_Handle(child, NULL);
+            ts1 = Exp_Handle(child, i);
+            if(ts1 == NULL) return NULL;
             if(ts1->SType->tn != STRUCTURE)
-                print_error(13, child->data.lineno, 0, NULL, NULL);
+                return print_error(13, child->data.lineno, 0, NULL, NULL);
             child = child->next->next;
             symbol = LookUpScope(ts1->SType->tv->structure->scope, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
-                print_error(14, child->data.lineno, 1, child->data.s, NULL);
+                return print_error(14, child->data.lineno, 1, child->data.s, NULL);
             ts1 = NewSyn();
             ts1->SType = symbol->type; 
             n->syn = ts1;
@@ -825,7 +859,7 @@ SDDFUNCDEF(Exp_Handle)
         case 15:
             symbol = LookUpSymbol(sts, NewSymbol(child->data.s, NULL, child->data.lineno));
             if(symbol == NULL)
-                print_error(1, child->data.lineno, 1, child->data.s, NULL);
+                return print_error(1, child->data.lineno, 1, child->data.s, NULL);
             ts1 = NewSyn();
             if(symbol != NULL)
                 ts1->SType = symbol->type;
@@ -869,28 +903,27 @@ SDDFUNCDEF(Args_Handle)
     switch (n->seq)
     {
         case 0:
-            ts = Exp_Handle(child, NULL);
+            ts = Exp_Handle(child, i);
+            if(ts == NULL) return NULL;
             scope = i->SType->tv->func->scope;
             if(!ArgForward(i->SType->tv->func))
                 return NULL;
-               // print_error(9, child->data.lineno, 2, getFuncStr(i->SType->tv->func), "xxx");
             opt = list_entry(scope->scopeposition, struct Symbol_, scopelist)->type;
             if (!TypeIsEqual(ts->SType, opt))
                 return NULL;
-               // print_error(9, child->data.lineno, 2, getFuncStr(i->SType->tv->func), "xxx");
             child = child->next->next;
             ts = Args_Handle(child, i);
+            if(ts == NULL) return NULL;
             return ts;
         case 1:
-            ts = Exp_Handle(child, NULL);
+            ts = Exp_Handle(child, i);
+            if(ts == NULL) return NULL;
             scope = i->SType->tv->func->scope;
             if(!ArgForward(i->SType->tv->func))    
                 return NULL;
-               // print_error(9, child->data.lineno, 2, getFuncStr(i->SType->tv->func), "xxx");
             opt = list_entry(scope->scopeposition, struct Symbol_, scopelist)->type;
             if (!TypeIsEqual(ts->SType, opt))
                 return NULL;
-               // print_error(9, child->data.lineno, 2, getFuncStr(i->SType->tv->func), "xxx");
             return ts;
     }
 
