@@ -16,6 +16,10 @@ int symbolSize = sizeof(struct Symbol_);
 
 
 
+void delSymbol(Symbol s)
+{
+   list_del(&s->hashlist); 
+}
 //creat new symbol
  Symbol NewSymbol(char *name, Type type, int lineno)
 {

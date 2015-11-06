@@ -43,4 +43,5 @@ extern  Symbol NewSymbol(char *name, Type type, int lineno);
 bool SymbolIsEqual(Symbol s1, Symbol s2);
 extern char *getFuncStr(FuncType f);
 extern bool TypeIsEqual(Type t1, Type t2);
+extern void delSymbol(Symbol s);
 #endif

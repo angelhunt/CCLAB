@@ -14,6 +14,9 @@ const unsigned HASH_TABLE_SIZE = 0xff;
 
 
 
+
+
+
 //hash function
 unsigned  HashPjw(char *name)
 {

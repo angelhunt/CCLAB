@@ -69,11 +69,28 @@ Syn print_error(int errortype, int lineno, int argc, char *s1, char *s2)
 
 STStack sts;
 ScopeStack scs;
+void findUndefFunc()
+{
+    SymbolTable st = sts->sts[0];
+    int i = 0;
+    ListHead *head, *ptr;
+    for(i = 0; i < HASH_TABLE_SIZE; i++)
+    {
+        head = &st->slist[i]->hashlist;
+        for ((ptr) = (head)->next; (ptr) != (head); (ptr) = (ptr)->next)
+        {
+            Symbol s = SHLEntry(ptr);
+            if(s->type->tn == FUNCAFF)
+                print_error(18, s->lineno, 1, s->name, NULL);
+        }
+    }
+}
 void SDD(Node *root)
 {
     sts = NewSTStack();
     scs = NewScopeStack();
     Program_Handle(root, NULL);
+    findUndefFunc();
 }
 
 SDDFUNCDEF(Program_Handle)
@@ -375,26 +392,24 @@ SDDFUNCDEF(FunDec_Handle)
             temp = LookUpSymbol(sts, symbol);
             if(temp != NULL)
             {
-                if(temp->type->tn == FUNC)
+                if(temp->type->tn == FUNC && ts->SType->tn == FUNC)
                     return print_error(4, t->data.lineno, 1, t->data.s, NULL);
                 else
                 {
                     if(!TypeIsEqual(symbol->type, temp->type))
                     {
-                        if(symbol->type->tn == FUNC)
-                            return print_error(4, t->data.lineno, 1, t->data.s, NULL);
-                        else
-                        {
                             return print_error(19, t->data.lineno, 1, t->data.s, NULL);
-                            return print_error(18, temp->lineno, 1, temp->name, NULL);
-                        }
                     }
                     else
                     {
-                        if(symbol->type->tn == FUNC)
+                        if(temp->type->tn == FUNCAFF && symbol->type->tn == FUNC)
                         {
-                            free(temp->type);
-                            temp->type = symbol->type;
+                            delSymbol(temp);
+                            free(temp);
+                        }
+                        if(symbol->type->tn == FUNCAFF && temp->type->tn == FUNC)
+                        {
+                            delSymbol(symbol);
                             free(symbol);
                         }
                     }
@@ -422,23 +437,22 @@ SDDFUNCDEF(FunDec_Handle)
             temp = LookUpSymbol(sts, symbol);
             if(temp != NULL)
             {
-                if(temp->type->tn == FUNC)
+                if(temp->type->tn == FUNC && ts->SType->tn == FUNC)
                     return print_error(4, child->data.lineno, 1, child->data.s, NULL);
                 else
                 {
                     if(!TypeIsEqual(symbol->type, temp->type))
-                    {
-                        if(symbol->type->tn == FUNC)
-                            return print_error(4, child->data.lineno, 1, child->data.s, NULL);
-                        else
                             return print_error(19, child->data.lineno, 1, child->data.s, NULL);
-                    }
                     else
                     {
-                        if(symbol->type->tn == FUNC)
+                        if(temp->type->tn == FUNCAFF && symbol->type->tn == FUNC)
                         {
-                            free(temp->type);
-                            temp->type = symbol->type;
+                            delSymbol(temp);
+                            free(temp);
+                        }
+                        if(symbol->type->tn == FUNCAFF && temp->type->tn == FUNC)
+                        {
+                            delSymbol(symbol);
                             free(symbol);
                         }
                     }
