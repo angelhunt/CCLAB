@@ -15,9 +15,6 @@
 //extern bool isErrorOut;
 //extern bool errorhandle;
 //extern void error_handle(char *msg, Node *error, int lineno);
-struct DATATYPE {
-    Node *np;
-};
 enum errortype
 {
     B,

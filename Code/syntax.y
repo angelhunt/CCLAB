@@ -11,8 +11,10 @@ bool le = false;
 */
 %}
 
-%define api.value.type {struct DATATYPE}
-
+%union 
+{
+    struct Node* np;
+};
 /*declared tokens*/
 %token <np> INT
 %token <np> FLOAT 

@@ -1,13 +1,12 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 1.875d.  */
 
-/* Bison interface for Yacc-like parsers in C
+/* Skeleton parser for Yacc-like parsing with Bison,
+   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
-
-   This program is free software: you can redistribute it and/or modify
+   This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,93 +14,114 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
-/* As a special exception, you may create a larger work that contains
-   part or all of the Bison parser skeleton and distribute that work
-   under terms of your choice, so long as that work isn't itself a
-   parser generator using the skeleton or a modified version thereof
-   as a parser skeleton.  Alternatively, if you modify or redistribute
-   the parser skeleton itself, you may (at your option) remove this
-   special exception, which will cause the skeleton and the resulting
-   Bison output files to be licensed under the GNU General Public
-   License without this special exception.
+/* As a special exception, when this file is copied by Bison into a
+   Bison output file, you may use that output file without restriction.
+   This special exception was added by the Free Software Foundation
+   in version 1.24 of Bison.  */
 
-   This special exception was added by the Free Software Foundation in
-   version 2.2 of Bison.  */
-
-#ifndef YY_YY_SYNTAX_TAB_H_INCLUDED
-# define YY_YY_SYNTAX_TAB_H_INCLUDED
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 1
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token type.  */
+/* Tokens.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
-  enum yytokentype
-  {
-    INT = 258,
-    FLOAT = 259,
-    ID = 260,
-    SEMI = 261,
-    COMMA = 262,
-    DOT = 263,
-    ASSIGNOP = 264,
-    RELOP = 265,
-    MINUS = 266,
-    PLUS = 267,
-    STAR = 268,
-    DIV = 269,
-    AND = 270,
-    OR = 271,
-    NOT = 272,
-    TYPE = 273,
-    STRUCT = 274,
-    LP = 275,
-    RP = 276,
-    LB = 277,
-    RB = 278,
-    LC = 279,
-    RC = 280,
-    RETURN = 281,
-    IF = 282,
-    ELSE = 283,
-    WHILE = 284,
-    UNKNOWN = 285,
-    LOWER_THAN_ELSE = 286,
-    NEG = 287
-  };
+   /* Put the tokens into the symbol table, so that GDB and other debuggers
+      know about them.  */
+   enum yytokentype {
+     INT = 258,
+     FLOAT = 259,
+     ID = 260,
+     SEMI = 261,
+     COMMA = 262,
+     DOT = 263,
+     ASSIGNOP = 264,
+     RELOP = 265,
+     MINUS = 266,
+     PLUS = 267,
+     STAR = 268,
+     DIV = 269,
+     AND = 270,
+     OR = 271,
+     NOT = 272,
+     TYPE = 273,
+     STRUCT = 274,
+     LP = 275,
+     RP = 276,
+     LB = 277,
+     RB = 278,
+     LC = 279,
+     RC = 280,
+     RETURN = 281,
+     IF = 282,
+     ELSE = 283,
+     WHILE = 284,
+     UNKNOWN = 285,
+     LOWER_THAN_ELSE = 286,
+     NEG = 287
+   };
 #endif
+#define INT 258
+#define FLOAT 259
+#define ID 260
+#define SEMI 261
+#define COMMA 262
+#define DOT 263
+#define ASSIGNOP 264
+#define RELOP 265
+#define MINUS 266
+#define PLUS 267
+#define STAR 268
+#define DIV 269
+#define AND 270
+#define OR 271
+#define NOT 272
+#define TYPE 273
+#define STRUCT 274
+#define LP 275
+#define RP 276
+#define LB 277
+#define RB 278
+#define LC 279
+#define RC 280
+#define RETURN 281
+#define IF 282
+#define ELSE 283
+#define WHILE 284
+#define UNKNOWN 285
+#define LOWER_THAN_ELSE 286
+#define NEG 287
 
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef struct DATATYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
+
+
+
+#if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
+#line 15 "./syntax.y"
+typedef union YYSTYPE {
+    struct Node* np;
+} YYSTYPE;
+/* Line 1241 of yacc.c.  */
+#line 105 "./syntax.tab.h"
+# define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
+# define YYSTYPE_IS_TRIVIAL 1
 #endif
 
-/* Location type.  */
-#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
-typedef struct YYLTYPE YYLTYPE;
-struct YYLTYPE
+extern YYSTYPE yylval;
+
+#if ! defined (YYLTYPE) && ! defined (YYLTYPE_IS_DECLARED)
+typedef struct YYLTYPE
 {
   int first_line;
   int first_column;
   int last_line;
   int last_column;
-};
+} YYLTYPE;
+# define yyltype YYLTYPE /* obsolescent; will be withdrawn */
 # define YYLTYPE_IS_DECLARED 1
 # define YYLTYPE_IS_TRIVIAL 1
 #endif
 
-
-extern YYSTYPE yylval;
 extern YYLTYPE yylloc;
-int yyparse (void);
 
-#endif /* !YY_YY_SYNTAX_TAB_H_INCLUDED  */
+
