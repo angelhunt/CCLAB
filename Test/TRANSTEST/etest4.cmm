@@ -1,0 +1,12 @@
+int f(int n)
+{
+    return n * f(n - 1);
+}
+
+
+int main()
+{
+    int i = 0;
+    read(i);
+    write(f(i));
+}
