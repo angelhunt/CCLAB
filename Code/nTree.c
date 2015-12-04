@@ -298,11 +298,31 @@ char* GetSpecifierStr(Node *n)
     }
     return str;
 }
+
+
+char *getVarId(Node *n)
+{
+    Node *var = n;
+    assert(n->nodetype == VarDec);
+    while(var->seq == 1)
+        var = NT_getChild(var, 0);
+    return NT_getChild(var, 0)->data.s;
+}
+
+
+Node *getVarDecParent(Node *n)
+{
+    assert(n->nodetype == VarDec);
+    Node *t = n;
+    while(t->nodetype == VarDec)
+        t = t->parent;
+    return t; 
+}
 /*
 static void tree_BFS(Node *r)
 {
     Node *p;
-    p = r -> children -> head -> next;
+    p = r -> children -> (head -> next;
     while(p != r -> children -> head)
         printf("%d ", p -> data);
     printf("\n")

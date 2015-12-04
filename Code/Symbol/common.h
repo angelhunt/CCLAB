@@ -12,4 +12,6 @@
 #include <stdbool.h>
 #include <string.h>
 #include "convenience.h"
+#include <assert.h>
+#include <stdarg.h>
 #endif

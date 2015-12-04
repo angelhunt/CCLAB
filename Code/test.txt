@@ -1,0 +1,17 @@
+/*
+int adf()
+{
+    return 5;
+}*/
+int main()
+{
+    int b;
+    int a;
+    write(1);
+    /*
+    a = adf();
+    if (a == 1)
+        a = 4;
+    */
+    return a;
+}

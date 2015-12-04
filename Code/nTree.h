@@ -14,6 +14,8 @@
 #include <stdarg.h>
 #include "Symbol/type.h"
 #include "syntax.tab.h"
+#include "Symbol/Symbol.h"
+#include "Trans/MidCode.h"
 #define OFFSETTYPETOSTR 258
 typedef struct ntList
 {
@@ -62,6 +64,8 @@ struct SynInh_
 {
     Type SType;    
     int value;
+    Var addr;
+    Symbol symbol;
 };
 
 
@@ -83,6 +87,16 @@ static inline void SynAssign(Syn s1, Syn s2)
         s1->SType = s2->SType;
     }
 }
+
+static inline Node* NT_getChild(Node *a, int n)
+{
+    Node* child = a->children->head->next;
+    int i = 0;
+    for(i = 0; i < n; i++)
+        child = child->next;
+    return child;
+}
+
 extern char nodetypestr[][20];
 Node *NewNode(NODETYPE nodetype, int seq, Data *data);
 ntList *NewList();
@@ -95,4 +109,7 @@ extern char *GetSpecifierStr(Node *n);
 extern char *GetVarListStr(Node *n);
 extern char *GetFuncStr(Node *n);
 extern char *getArgsStr(Node *n);
+extern char *getVarId(Node *n);
+extern Node *getVarDecParent(Node *n);
+
 #endif

@@ -26,16 +26,6 @@ struct Symbol_
 
 typedef struct Symbol_* Symbol;
 
-static inline Symbol SHLEntry(ListHead *ptr)
-{
-    return list_entry(ptr, struct Symbol_, hashlist);
-}
-
-
-static inline Symbol SSLEntry(ListHead *ptr)
-{
-    return list_entry(ptr, struct Symbol_, scopelist);
-}
 
 extern int symbolSize;
 
@@ -44,4 +34,7 @@ bool SymbolIsEqual(Symbol s1, Symbol s2);
 extern char *getFuncStr(FuncType f);
 extern bool TypeIsEqual(Type t1, Type t2);
 extern void delSymbol(Symbol s);
+extern int getSymbolSize(Symbol s);
+extern Symbol SSLEntry(ListHead *ptr);
+extern Symbol SHLEntry(ListHead *ptr);
 #endif

@@ -11,6 +11,7 @@
 #include "../nTree.h"
 #include "../Symbol/SymbolTable.h"
 #include "../Symbol/STStack.h"
+#include "../Trans/trans.h"
 #define SDDFUNCDEF(s) static Syn s(Node *n, Inh i)  
 //#define DEBUG
 typedef Syn (*SDDFunc)(Node *n, Inh);
@@ -38,4 +39,9 @@ SDDFUNCDEF(DecList_Handle);
 SDDFUNCDEF(Dec_Handle);    
 SDDFUNCDEF(Exp_Handle);
 SDDFUNCDEF(Args_Handle);
+
+
+extern STStack sts;
+extern ScopeStack scs;
+extern MCA mca;
 #endif

@@ -8,7 +8,12 @@
 #define _TYPE_H
 #include "common.h"
 #include "ScopeStack.h"
+#include "../syntax.tab.h"
+//#include "Symbol.h"
 struct SymbolTable_;
+struct Symbol_;
+extern int getSymbolSize(struct Symbol_* s);
+extern struct Symbol_* SSLEntry(ListHead *ptr);
 enum KIND{ BASIC, ARRAY, STRUCTURE, FUNC, STRUCTTYPE, NONE, FUNCAFF};
 typedef enum KIND KIND;
 typedef struct Type_* Type;
@@ -52,6 +57,8 @@ struct Type_
 {
     KIND tn;
     TypeValue tv;
+    int width;
+    bool ispointer;
 };
 
 

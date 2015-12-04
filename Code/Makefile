@@ -32,7 +32,7 @@ syntax-c: $(YFILE)
 -include $(patsubst %.o, %.d, $(OBJS))
 
 # 定义的一些伪目标
-.PHONY: clean SDDtest debug
+.PHONY: clean SDDtest debug Trantest Tran
 SDDtest:
 	./parser ../Test/SDDtest/test1.cmm
 	./parser ../Test/SDDtest/test2.cmm
@@ -57,11 +57,33 @@ SDDtest:
 	./parser ../Test/SDDtest/etest4.cmm
 	./parser ../Test/SDDtest/etest5.cmm
 	./parser ../Test/SDDtest/etest6.cmm
+
+
+Tran:
+	rm -rf ~/Documents/Code/code1.ir 
+	./parser ../Test/TRANSTEST/test1.cmm >> ~/Documents/Code/code1.ir
+	rm -rf ~/Documents/Code/code2.ir 
+	./parser ../Test/TRANSTEST/test2.cmm >> ~/Documents/Code/code2.ir
+	rm -rf ~/Documents/Code/code5.ir 
+	./parser ../Test/TRANSTEST/etest3.cmm >> ~/Documents/Code/code5.ir
+	rm -rf ~/Documents/Code/code4.ir 
+	./parser ../Test/TRANSTEST/etest2.cmm >> ~/Documents/Code/code4.ir
+	rm -rf ~/Documents/Code/code3.ir 
+	./parser ../Test/TRANSTEST/etest2.cmm >> ~/Documents/Code/code3.ir
+
+Trantest:
+	./parser ../Test/TRANSTEST/test1.cmm 
+	./parser ../Test/TRANSTEST/test2.cmm 
+	./parser ../Test/TRANSTEST/etest3.cmm 
+	./parser ../Test/TRANSTEST/etest2.cmm 
+	./parser ../Test/TRANSTEST/etest1.cmm 
+
+
 clean:
 	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output
 	rm -f $(OBJS) $(OBJS:.o=.d)
 	rm -f $(LFC) $(YFC) $(YFC:.c=.h)
 	rm -f *~
 debug:
-	gcc -g -o parser main.c syntax.tab.c parser.c nTree.c SDD/SDD.c Symbol/*.c -lfl -ly
+	gcc -g -o parser main.c syntax.tab.c parser.c nTree.c SDD/SDD.c Symbol/*.c Trans/*.c -lfl -ly
 	gdb parser

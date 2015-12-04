@@ -51,7 +51,7 @@ Syn print_error(int errortype, int lineno, int argc, char *s1, char *s2)
     switch(argc)
     {
         case 0:
-            printf(SDDErrorStr[errortype - 1]);
+            printf("%s", SDDErrorStr[errortype - 1]);
             break;
         case 1:
             printf(SDDErrorStr[errortype - 1], s1);
@@ -69,6 +69,7 @@ Syn print_error(int errortype, int lineno, int argc, char *s1, char *s2)
 
 STStack sts;
 ScopeStack scs;
+MCA mca;
 void findUndefFunc()
 {
     SymbolTable st = sts->sts[0];
@@ -87,9 +88,46 @@ void findUndefFunc()
 }
 void SDD(Node *root)
 {
+    //initial global data 
+    mca = NewMCA();
     sts = NewSTStack();
     scs = NewScopeStack();
+
+
+    //read and write
+    TypeValue t1; 
+    TypeValue t2;
+    Type funtype;
+    t1 = NewTypeValue();
+    t2 = NewTypeValue();
+    t2->basic = INT;
+    t1->func = NewFuncType(NewType(BASIC, t2));
+    t1->func->st = ST_GetTop(sts);
+    t1->func->scope = SS_GetTop(t1->func->st->ss);
+    t1->func->name = "read";
+    funtype = NewType(FUNC, t1);
+    Symbol ts = NewSymbol("read", funtype, -1);
+    TableInsertSymbol(ST_GetTop(sts), ts);
+
+    
+
+    t1 = NewTypeValue();
+    t1->func = NewFuncType(NewType(BASIC, t2));
+    t1->func->st = ST_GetTop(sts);
+    t1->func->scope = SS_GetTop(t1->func->st->ss);
+    t1->func->name = "write";
+    Symbol arg = NewSymbol("data", NewType(BASIC, t2), -1);
+    ScopeInsertSymbol(t1->func->scope, arg);
+    funtype = NewType(FUNC, t1);
+    Symbol ts2 = NewSymbol("write", funtype, -1);
+    TableInsertSymbol(ST_GetTop(sts), ts2);
+    //run
     Program_Handle(root, NULL);
+    #ifdef debug
+    translate_Program(root, ST_GetTop(sts), mca);
+    #else
+    printMCA(mca, translate_Program(root, ST_GetTop(sts), mca));
+    #endif
     findUndefFunc();
 }
 
@@ -326,10 +364,15 @@ SDDFUNCDEF(VarDec_Handle)
                         break;
                 }
             }*/
-            if(n->parent->nodetype == ParamDec)
-                ScopeInsertSymbol(SS_GetTop(ST_GetTop(sts)->ss), symbol);
-            else
+            //if(getVarDecParent(n)->nodetype == ParamDec)
+            if(ST_GetTop(sts)->type == STRUCTST || ST_GetTop(sts)->type == PARAMST)
             {
+                if(symbol->type->tn == ARRAY)
+                    symbol->type->ispointer = true;
+                ScopeInsertSymbol(SS_GetTop(ST_GetTop(sts)->ss), symbol);
+            }
+            //else
+            //{
             if(!TableInsertSymbol(ST_GetTop(sts), symbol))
             {
                 switch(ST_GetTop(sts)->type)
@@ -342,13 +385,13 @@ SDDFUNCDEF(VarDec_Handle)
                         break;
                 }
             }
-            }
+            //}
             child->syn->SType = i->SType;
             return NULL;
         case 1:
             ts = NewSyn();
             tv = NewTypeValue();
-            tv->array = NewArrayType(i->SType, child->next->next->data.lineno);
+            tv->array = NewArrayType(i->SType, child->next->next->data.i);
             ts->SType = NewType(ARRAY, tv);
             ts = VarDec_Handle(child, ts);
             if(ts == NULL) return NULL;
@@ -557,6 +600,7 @@ SDDFUNCDEF(StmtList_Handle)
     {
         case 0:
             Stmt_Handle(child, i);
+            //printMCA(mca, translate_Stmt(child, ST_GetTop(sts), mca));
             child = child->next;
             StmtList_Handle(child, i);
             break;
@@ -578,6 +622,7 @@ SDDFUNCDEF(Stmt_Handle)
     TypeValue tv;
     Syn ts;
     Inh ti;
+    Var v;
     switch (n->seq)
     {
         case 0:
@@ -726,7 +771,7 @@ SDDFUNCDEF(Exp_Handle)
         case 0:
             ts1 = Exp_Handle(child, i);
             if(ts1 == NULL) return NULL;
-            if(!(child->seq == 15 || child->seq == 14 || child->seq == 9 || child->seq == 0))
+            if(!(child->seq == 15 || child->seq == 14 || child->seq == 9 || child->seq == 0 || child->seq == 13 || child->seq == 14))
                 return print_error(6, child->data.lineno, 0, NULL, NULL);
             child = child->next->next;
             ts2 = Exp_Handle(child, i);
@@ -821,6 +866,7 @@ SDDFUNCDEF(Exp_Handle)
             ts1 = NewSyn();
             ts1->SType = symbol->type;
             ts2 = Args_Handle(child, ts1);
+            symbol->type->tv->func->scope->scopeposition = &symbol->type->tv->func->scope->scopelist;
             if(ts2 == NULL)
                 return print_error(9, child->data.lineno, 2, getFuncStr(ts1->SType->tv->func), getArgsStr(child));
             return ts1;
@@ -931,7 +977,8 @@ SDDFUNCDEF(Args_Handle)
             return ts;
         case 1:
             ts = Exp_Handle(child, i);
-            if(ts == NULL) return NULL;
+            if(ts == NULL) 
+                return NULL;
             scope = i->SType->tv->func->scope;
             if(!ArgForward(i->SType->tv->func))    
                 return NULL;

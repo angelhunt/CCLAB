@@ -71,5 +71,33 @@ bool ArgForward(FuncType func)
     memset(t, 0, Type_Size);
     t->tn = tn;
     t->tv = tv;
+    ListHead *head,*ptr;
+    struct Symbol_ *s;
+    Type use;
+    switch(tn)
+    {
+        case BASIC:
+            if(tv->basic == INT)
+                t->width = 4;
+            if(tv->basic == FLOAT)
+                t->width = 8;
+            break;
+        case ARRAY:
+            t->width = tv->array->elem->width * tv->array->size;
+            break;
+        case FUNC:
+            break;
+        case STRUCTTYPE:
+            head = &tv->structure->scope->scopelist;
+            for(ptr = head->next; ptr != head; ptr = ptr->next)
+            {
+                s = SSLEntry(ptr);
+                t->width += getSymbolSize(s);
+            }
+            break;
+        case FUNCAFF:
+            break;
+    }
+    
     return t;
 }

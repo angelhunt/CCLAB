@@ -101,6 +101,23 @@ bool TypeIsEqual(Type t1, Type t2)
                 if(!(ptr1 == head1 && ptr2 == head2))
                     return false;
                 return true; 
+            case STRUCTURE:
+                scope1 = t1->tv->structure->scope;
+                scope2 = t2->tv->structure->scope;
+                head1 = &scope1->scopelist;
+                head2 = &scope2->scopelist;
+	            for (ptr1 = head1->next, ptr2 = head2->next; ptr1 != head1 && ptr2 != head2; ptr1 = ptr1->next, ptr2 = ptr2->next)
+                {
+                    s1 = list_entry(ptr1, struct Symbol_, scopelist);
+                    s2 = list_entry(ptr2, struct Symbol_, scopelist);
+                    if(!TypeIsEqual(s1->type, s2->type))
+                        return false;
+                }
+                if(!(ptr1 == head1 && ptr2 == head2))
+                    return false;
+                return true; 
+
+
             default:
                 return false;
         }
@@ -113,3 +130,19 @@ bool TypeIsEqual(Type t1, Type t2)
     }
 }
 
+
+
+int getSymbolSize(Symbol s)
+{
+    return s->type->width;
+}
+Symbol SHLEntry(ListHead *ptr)
+{
+    return list_entry(ptr, struct Symbol_, hashlist);
+}
+
+
+Symbol SSLEntry(ListHead *ptr)
+{
+    return list_entry(ptr, struct Symbol_, scopelist);
+}

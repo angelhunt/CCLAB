@@ -1,0 +1,281 @@
+/*************************************************************************
+	> File Name: trans.c
+	> Author: 
+	> Mail: 
+	> Created Time: 2015年11月13日 星期五 19时54分39秒
+ ************************************************************************/
+
+#include "trans.h"
+
+
+static inline MCAHead genPlaceMidCode(MCA mca, MIDCODET kind, Var place, Var t2, Var t3)
+{
+    if(place == NULL) 
+        return NULL;
+    MCAHead h = NewMCAHead(mca, NewMidCode(kind, place, t2, t3));
+    return h;
+}
+MCAHead translate_Exp(Node *n, SymbolTable table, Var place, MCA mca)
+{
+    assert(n->nodetype == Exp);
+    Var v1, v2, v3;
+    Node* child = n->children->head->next;
+    MCAHead h;
+    MCAHead h1, h2, h3;
+    Var vlist[12];
+    int vlistlen = 0;
+    int t;
+    switch(n->seq)
+    {
+        case 0:   //ASSIGNOP
+            v3 = NewVar(TEMP);
+            h1 = translate_Exp(child->next->next, table, v3, mca);
+            v2 = NewVar(VAR);
+            v2->name = NT_getChild(child, 0)->data.s;
+            h2 = NewMCAHead(mca, NewMidCode(C_ASSIGN, v2, v3, NULL));
+            h3 = genPlaceMidCode(mca, C_ASSIGN, place, v2, NULL);
+            LinkMulMCAHead(mca, 3, h1, h2, h3);
+            h = h1;
+            break;
+        case 1:   case 2: case 3: case 10:  //AND OR NOT RELOP
+            v3 = NewVar(CON);
+            v3->value = 0;
+            h1 = genPlaceMidCode(mca, C_ASSIGN, place, v3, NULL);
+            v1 = NewVar(LABEL);
+            v2 = NewVar(LABEL);
+            h2 = translate_Cond(n, v1, v2, table, mca);
+            v3 = NewVar(CON);
+            v3->value = 1;
+            h = LinkMulMCAHead(mca, 5, h1, h2,
+                               NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)),
+                               genPlaceMidCode(mca, C_ASSIGN, place, v3, NULL),
+                               NewMCAHead(mca, NewMidCode(C_LAB, v2, NULL, NULL)));
+            break;
+        case 4:   //PLUS
+            v2 = NewVar(TEMP);
+            v3 = NewVar(TEMP);
+            h1 = translate_Exp(child, table, v2, mca);
+            h2 = translate_Exp(child->next->next, table, v3, mca);
+            h3 = genPlaceMidCode(mca, C_ADD, place, v2, v3);
+            LinkMulMCAHead(mca, 3, h1, h2, h3);
+            h = h1;
+            break;
+        case 5:   //MINUS
+            v2 = NewVar(TEMP);
+            v3 = NewVar(TEMP);
+            h1 = translate_Exp(child, table, v2, mca);
+            h2 = translate_Exp(child->next->next, table, v3, mca);
+            h3 = genPlaceMidCode(mca, C_SUB, place, v2, v3);
+            LinkMulMCAHead(mca, 3, h1, h2, h3);
+            h = h1;
+            break;
+        case 6:   //STAR
+            break;
+        case 7:   //DIV
+            break;
+        case 8:   //LPRP
+            break;
+        case 9:   //MINUS
+            v1 = NewVar(TEMP);
+            h1 = translate_Exp(child->next, table, v1, mca);
+            v2 = NewVar(CON);
+            v2->value = 0;
+            h2 = genPlaceMidCode(mca, C_SUB, place, v2, v1);
+            LinkMulMCAHead(mca, 2, h1, h2);
+            h = h1;
+            break;
+        case 11:  //CALL
+            v1 = NewVar(VAR);
+            v1->name = NT_getChild(n, 0)->data.s;
+            h1 = translate_Args(NT_getChild(n, 2), table, vlist, &vlistlen, mca);
+            if(strcmp(v1->name, "write") == 0) 
+            {
+                h = LinkMulMCAHead(mca, 2, h1,
+                                   NewMCAHead(mca, NewMidCode(C_WRITE, vlist[0], NULL, NULL)));
+            }
+            else
+            {
+                for(t = 0; t < vlistlen; t++)
+                    LinkMulMCAHead(mca, 2, h1,
+                                   NewMCAHead(mca, NewMidCode(C_ARG, vlist[t], NULL, NULL)));
+                h = LinkMulMCAHead(mca, 2, h1, genPlaceMidCode(mca, C_CALL, place, v1, NULL));
+            }
+            break;
+        case 12:  //CALL NO ARG
+            v1 = NewVar(VAR);
+            v1->name = NT_getChild(n, 0)->data.s;
+            if(strcmp(v1->name, "read") == 0)
+                h = genPlaceMidCode(mca, C_READ, place, NULL, NULL);
+            else 
+                h = genPlaceMidCode(mca, C_CALL, place, v1, NULL);
+            break;
+        case 13:  //ARRAY
+            break;
+        case 14:  //STRUCT
+            break;
+        case 15:   //ID
+            v2 = NewVar(VAR);
+            v2->name = child->data.s;
+            changevar(place, v2);
+            //h = genPlaceMidCode(mca, C_ASSIGN, place, v2, NULL);
+            h = NULL;
+            break;
+        case 16:   //INT
+            v2 = NewVar(CON);
+            v2->value = child->data.i; 
+           // changevar(place, v2);
+           // place = v2;
+            h = genPlaceMidCode(mca, C_ASSIGN, place, v2, NULL);
+           // h = NULL;
+            break;
+        case 17:   //FLOAT
+            break;
+    }
+    return h;
+}
+
+
+
+
+MCAHead translate_Stmt(Node* n, SymbolTable table, MCA mca)
+{
+    assert(n->nodetype == Stmt);
+    Var v1, v2, v3;
+    Node* child = n->children->head->next;
+    MCAHead h;
+    MCAHead h1, h2, h3;
+
+    switch(n->seq)
+    {
+        case 0:        //Exp
+            h = translate_Exp(child, table, NULL, mca);
+            break;
+        case 1:        //Compst
+            //return translate_CompSt(child, table, mca);
+            break;
+        case 2:        //RETURN
+            v1 = NewVar(TEMP);
+            h1 = translate_Exp(child->next, table, v1, mca);
+            h2 = NewMCAHead(mca, NewMidCode(C_RETURN, v1, NULL, NULL));
+            h = LinkMulMCAHead(mca, 2, h1, h2);
+            break;
+        case 3:        //IF
+            v1 = NewVar(LABEL);
+            v2 = NewVar(LABEL);
+            h1 = translate_Cond(child->next->next, v1, v2, table,mca);
+            h2 = translate_Stmt(NT_getChild(n, 4), table, mca);
+            h = LinkMulMCAHead(mca, 4, h1, NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)), h2, NewMCAHead(mca, NewMidCode(C_LAB, v2, NULL, NULL)));
+            break;
+        case 4:        //IF ELSE
+            v1 = NewVar(LABEL);
+            v2 = NewVar(LABEL);
+            h1 = translate_Cond(child->next->next, v1, v2, table,mca);
+            h2 = translate_Stmt(NT_getChild(n, 4), table, mca);
+            h3 = translate_Stmt(NT_getChild(n, 6), table, mca);
+            v3 = NewVar(LABEL);
+            h = LinkMulMCAHead(mca, 7, h1, NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)), h2,
+                               NewMCAHead(mca, NewMidCode(C_GOTO, v3, NULL, NULL)), 
+                               NewMCAHead(mca, NewMidCode(C_LAB, v2, NULL, NULL)),
+                               h3, NewMCAHead(mca, NewMidCode(C_LAB, v3, NULL, NULL))
+                              );
+            
+            break;
+        case 5:        //WHILE
+            v1 = NewVar(LABEL);
+            v2 = NewVar(LABEL);
+            v3 = NewVar(LABEL);
+            h1 = translate_Cond(NT_getChild(n, 2), v2, v3, table,mca);
+            h2 = translate_Stmt(NT_getChild(n, 4), table, mca);
+            h = LinkMulMCAHead(mca, 6, NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)), h1,
+                               NewMCAHead(mca, NewMidCode(C_LAB, v2, NULL, NULL)), h2,
+                               NewMCAHead(mca, NewMidCode(C_GOTO, v1, NULL, NULL)),
+                               NewMCAHead(mca, NewMidCode(C_LAB, v3, NULL, NULL)));
+
+            break;
+    }
+    
+    return h;
+}
+
+
+
+MCAHead translate_Cond(Node *n, Var lt, Var lf, SymbolTable table, MCA mca)
+{
+    assert(n->nodetype == Exp);
+    Var v1, v2, v3;
+    Node* child = n->children->head->next;
+    MCAHead h;
+    MCAHead h1, h2, h3;
+    char *op;
+    switch(n->seq)
+    {
+        case 3:                   //RELOP
+            v1 = NewVar(TEMP);
+            h1 = translate_Exp(NT_getChild(n, 0), table, v1, mca);
+            v2 = NewVar(TEMP);
+            h2 = translate_Exp(NT_getChild(n, 2), table, v2, mca);
+            h3 = NewMCAHead(mca, NewMidCode(C_IF, v1, v2, lt));
+            h3->ptrtoe->op = NT_getChild(n, 1)->data.s;
+            h = LinkMulMCAHead(mca, 4, h1, h2, h3, 
+                               NewMCAHead(mca, NewMidCode(C_GOTO, lf, NULL, NULL)));
+            break;
+        case 10:                  //NOT
+            h = translate_Cond(NT_getChild(n, 1), lf, lt, table, mca);
+            break;
+        case 1:                   //AND
+            v1 = NewVar(LABEL);
+            h1 = translate_Cond(NT_getChild(n, 0), v1, lf, table, mca);
+            h2 = translate_Cond(NT_getChild(n, 2), lt, lf, table, mca);
+            h = LinkMulMCAHead(mca, 3, h1,
+                               NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)), h2);
+            break;
+        case 2:                   //OR
+            v1 = NewVar(LABEL);
+            h1 = translate_Cond(NT_getChild(n, 0), lt, v1, table, mca);
+            h2 = translate_Cond(NT_getChild(n, 2), lt, lf, table, mca);
+            h = LinkMulMCAHead(mca, 3, h1,
+                               NewMCAHead(mca, NewMidCode(C_LAB, v1, NULL, NULL)), h2);
+            break;
+        default:
+            v1 = NewVar(TEMP);
+            h1 = translate_Exp(child, table, v1, mca);
+            v2 = NewVar(CON);
+            v2->value = 0;
+            h2 = NewMCAHead(mca, NewMidCode(C_IF, v1, v2, lt));
+            h = LinkMulMCAHead(mca, 3, h1, h2,
+                               NewMCAHead(mca, NewMidCode(C_GOTO, lf, NULL, NULL)));
+            break;
+    }
+
+    return h;
+}
+
+
+
+MCAHead translate_Args(Node *n, SymbolTable table, Var* vlist, int *len, MCA mca)
+{
+    assert(n->nodetype == Args);
+    Var v1, v2, v3;
+    Node* child = n->children->head->next;
+    MCAHead h;
+    MCAHead h1, h2, h3;
+    switch(n->seq)
+    {
+        case 0:
+            v1 = NewVar(TEMP);
+            h1 = translate_Exp(NT_getChild(n, 0), table, v1, mca);
+            vlist[*len] = v1;
+            *len = *len + 1;
+            h2 = translate_Args(NT_getChild(n, 2), table, vlist, len, mca);
+            h = LinkMulMCAHead(mca, 2, h1, h2);
+            break;
+        case 1:
+            v1 = NewVar(TEMP);
+            h = translate_Exp(NT_getChild(n, 0), table, v1, mca);
+            vlist[*len] = v1;
+            *len = *len + 1;
+            break;
+    }
+
+    return h;
+}
