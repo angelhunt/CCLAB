@@ -58,7 +58,8 @@ Program : ExtDefList {
         if(error_exist == false)
             DFS($$, 0);
         #endif
-        SDD($$);
+        if(error_exist == false)
+            SDD($$);
         }
     ;
 
